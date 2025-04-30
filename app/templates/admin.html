@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Администрирование</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="{{ url_for('main.index') }}">ProfTest</a>
+  <ul class="navbar-nav ml-auto">
+    <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Выйти</a></li>
+  </ul>
+</nav>
+<div class="container mt-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+      <div class="alert alert-{{ category }}" role="alert">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  
+  {% if test is defined %}
+    <!-- Страница управления конкретным тестом -->
+    <h2>Управление тестом: "{{ test.title }}"</h2>
+    <a href="{{ url_for('admin.admin_index') }}" class="btn btn-link">&larr; К списку тестов</a>
+    <hr>
+    <!-- Форма добавления нового вопроса -->
+    <h4>Добавить вопрос</h4>
+    <form method="post" action="{{ url_for('admin.admin_test_detail', test_id=test.id) }}">
+      <div class="form-group">
+        <input type="text" name="question_text" class="form-control" placeholder="Текст нового вопроса" required>
+      </div>
+      <button type="submit" class="btn btn-primary mb-3">Добавить вопрос</button>
+    </form>
+    <!-- Список вопросов и вариантов -->
+    <h4>Вопросы:</h4>
+    {% for q in questions %}
+      <div class="card mb-2">
+        <div class="card-body">
+          <p><strong>{{ loop.index }}. {{ q.text }}</strong>
+            <a href="{{ url_for('admin.admin_delete_question', question_id=q.id) }}" class="text-danger float-right" onclick="return confirm('Удалить вопрос?');">удалить</a>
+          </p>
+          <!-- Список вариантов ответа, если есть -->
+          {% if q.options %}
+            <ul>
+            {% for opt in q.options %}
+              <li>
+                "{{ opt.text }}" {% if opt.category %}(<em>{{ opt.category }}</em>){% endif %}, балл: {{ opt.score }}
+                <a href="{{ url_for('admin.admin_delete_option', option_id=opt.id) }}" class="text-danger" onclick="return confirm('Удалить вариант?');">удалить</a>
+              </li>
+            {% endfor %}
+            </ul>
+          {% endif %}
+          <!-- Форма добавления варианта ответа для этого вопроса -->
+          <form method="post" action="{{ url_for('admin.admin_add_option', question_id=q.id) }}" class="form-inline">
+            <input type="text" name="option_text" class="form-control mr-2 mb-2" placeholder="Новый вариант ответа" required>
+            <input type="number" name="score" class="form-control mr-2 mb-2" placeholder="Балл" style="width: 6rem;">
+            <input type="text" name="category" class="form-control mr-2 mb-2" placeholder="Категория">
+            <button type="submit" class="btn btn-secondary mb-2">Добавить вариант</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+    <!-- Просмотр результатов данного теста -->
+    <hr>
+    <h4>Результаты пользователей:</h4>
+    {% if test.results %}
+      <table class="table table-sm table-striped">
+        <thead><tr><th>Пользователь</th><th>Результат</th><th>Дата</th></tr></thead>
+        <tbody>
+        {% for res in test.results %}
+          <tr>
+            <td>{{ res.user.username }}</td>
+            <td>{{ res.result_text }}</td>
+            <td>{{ res.timestamp.strftime("%Y-%m-%d %H:%M") }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="text-muted">Пока нет результатов для этого теста.</p>
+    {% endif %}
+
+  {% else %}
+    <!-- Главная страница админ-панели: список тестов и форма создания -->
+    <h2>Администрирование – Список тестов</h2>
+    <!-- Форма добавления нового теста -->
+    <h5 class="mt-4">Создать новый тест:</h5>
+    <form method="post" action="{{ url_for('admin.admin_index') }}" class="mb-4">
+      <div class="form-group">
+        <label for="title">Название теста</label>
+        <input type="text" name="title" class="form-control" id="title" required>
+      </div>
+      <div class="form-group">
+        <label for="description">Описание (необязательно)</label>
+        <textarea name="description" class="form-control" id="description"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="type">Тип теста</label>
+        <select name="type" class="form-control" id="type" required>
+          <option value="">-- Выберите тип --</option>
+          <option value="career">Профориентационный</option>
+          <option value="knowledge">Тест знаний (ЕГЭ)</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-success">Создать тест</button>
+    </form>
+    <!-- Список существующих тестов -->
+    <ul class="list-group">
+      {% for t in tests %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ t.title }}</strong> <small class="text-muted">({{ 'Профориентационный' if t.type=='career' else 'Тест знаний' }})</small>
+        </div>
+        <div>
+          <a href="{{ url_for('admin.admin_test_detail', test_id=t.id) }}" class="btn btn-primary btn-sm">Открыть</a>
+          <a href="{{ url_for('admin.admin_delete_test', test_id=t.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Удалить тест &quot;{{ t.title }}&quot;?');">Удалить</a>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>
+</body>
+</html>

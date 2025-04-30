@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Профориентационный тест</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="{{ url_for('main.index') }}">ProfTest</a>
+  <div class="collapse navbar-collapse">
+    <ul class="navbar-nav ml-auto">
+      {% if current_user.is_authenticated %}
+        {% if current_user.is_admin %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('admin.admin_index') }}">Админ-панель</a>
+        </li>
+        {% endif %}
+        <li class="nav-item">
+          <span class="navbar-text">Вы вошли как {{ current_user.username }}</span>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('auth.logout') }}">Выйти</a>
+        </li>
+      {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('auth.login') }}">Вход</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('auth.register') }}">Регистрация</a>
+        </li>
+      {% endif %}
+    </ul>
+  </div>
+</nav>
+
+<div class="container mt-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+      <div class="alert alert-{{ category }}" role="alert">
+        {{ msg }}
+      </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% if current_user.is_authenticated %}
+    <h1>Доступные тесты</h1>
+    <ul class="list-group">
+      {% for test in tests %}
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{{ test.title }}</strong>
+            {% if test.description %}<small class="text-muted">– {{ test.description }}</small>{% endif %}
+            {% if current_user.is_authenticated %}
+              {% set user_result = (current_user.results | selectattr("test_id", "equalto", test.id) | list)|last %}
+            {% endif %}
+            {% if user_result %}
+              <span class="badge badge-info">Пройдено</span>
+            {% endif %}
+          </div>
+          <div>
+            {% if user_result %}
+              <a href="{{ url_for('main.take_test', test_id=test.id) }}" class="btn btn-primary btn-sm">Пройти снова</a>
+              <a href="{{ url_for('main.result', test_id=test.id) }}" class="btn btn-secondary btn-sm">Результат</a>
+            {% else %}
+              <a href="{{ url_for('main.take_test', test_id=test.id) }}" class="btn btn-success btn-sm">Пройти тест</a>
+            {% endif %}
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="jumbotron">
+      <h1 class="display-4">Добро пожаловать!</h1>
+      <p class="lead">Пожалуйста, войдите в систему или зарегистрируйтесь, чтобы пройти профориентационное тестирование.</p>
+      <hr class="my-4">
+      <a class="btn btn-primary btn-lg" href="{{ url_for('auth.login') }}" role="button">Войти</a>
+      <a class="btn btn-secondary btn-lg" href="{{ url_for('auth.register') }}" role="button">Регистрация</a>
+    </div>
+  {% endif %}
+</div>
+</body>
+</html>

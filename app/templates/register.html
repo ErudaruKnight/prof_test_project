@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Регистрация</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="{{ url_for('main.index') }}">ProfTest</a>
+</nav>
+<div class="container mt-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+      <div class="alert alert-{{ category }}" role="alert">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <h2>Регистрация</h2>
+  <form method="post" action="{{ url_for('auth.register') }}">
+    <div class="form-group">
+      <label for="username">Имя пользователя:</label>
+      <input type="text" class="form-control" id="username" name="username" required>
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input type="email" class="form-control" id="email" name="email" required>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Пароль:</label>
+      <input type="password" class="form-control" id="password" name="password" required>
+    </div>
+
+    <div class="form-group">
+      <label for="confirm">Повторите пароль:</label>
+      <input type="password" class="form-control" id="confirm" name="confirm" required>
+    </div>
+
+    <div class="form-group">
+      <label for="birth_date">Дата рождения:</label>
+      <input type="date" class="form-control" id="birth_date" name="birth_date" required>
+    </div>
+
+    <div class="form-group">
+      <label>Вы:</label><br>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="is_student" id="student" value="1" checked>
+        <label class="form-check-label" for="student">Студент</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="is_student" id="schoolkid" value="0">
+        <label class="form-check-label" for="schoolkid">Школьник</label>
+      </div>
+    </div>
+
+    <div id="ege-section">
+      <div class="form-group">
+        <label for="ege_math">ЕГЭ: Математика</label>
+        <input type="number" class="form-control" id="ege_math" name="ege_math" min="0" max="100">
+      </div>
+      <div class="form-group">
+        <label for="ege_russian">ЕГЭ: Русский язык</label>
+        <input type="number" class="form-control" id="ege_russian" name="ege_russian" min="0" max="100">
+      </div>
+      <div class="form-group">
+        <label for="ege_physics">ЕГЭ: Физика / Информатика</label>
+        <input type="number" class="form-control" id="ege_physics" name="ege_physics" min="0" max="100">
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+    <p class="mt-3">Уже есть аккаунт? <a href="{{ url_for('auth.login') }}">Войти</a>.</p>
+  </form>
+</div>
+
+<script>
+  const studentRadio = document.getElementById('student');
+  const schoolkidRadio = document.getElementById('schoolkid');
+  const egeSection = document.getElementById('ege-section');
+
+  function toggleEgeFields() {
+    egeSection.style.display = studentRadio.checked ? 'block' : 'none';
+  }
+
+  studentRadio.addEventListener('change', toggleEgeFields);
+  schoolkidRadio.addEventListener('change', toggleEgeFields);
+  window.onload = toggleEgeFields;
+</script>
+</body>
+</html>
