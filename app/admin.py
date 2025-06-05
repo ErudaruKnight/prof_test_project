@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from app import db
-from app.models import Test, Question, Option, Result
+from app.models import Test, Question, Option
 
 admin_bp = Blueprint('admin', __name__)
 
