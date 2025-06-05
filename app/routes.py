@@ -121,3 +121,11 @@ def result(test_id):
         flash('Результат для данного теста не найден.', 'warning')
         return redirect(url_for('main.index'))
     return render_template('result.html', test=test, result=result)
+
+
+@main_bp.route('/profile')
+@login_required
+def profile():
+    """Личный профиль с результатами всех тестов."""
+    user_results = Result.query.filter_by(user_id=current_user.id).order_by(Result.timestamp.desc()).all()
+    return render_template('profile.html', results=user_results)
