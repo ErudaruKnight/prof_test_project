@@ -23,13 +23,31 @@
         <input type="number" class="form-control" id="ege_russian" name="ege_russian" value="{{ scores.russian }}" min="0" max="100">
       </div>
       <div class="form-group col">
-        <label for="ege_physics">Физика/Информатика</label>
+        <label for="ege_physics">Физика</label>
         <input type="number" class="form-control" id="ege_physics" name="ege_physics" value="{{ scores.physics }}" min="0" max="100">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group col">
+        <label for="ege_informatics">Информатика</label>
+        <input type="number" class="form-control" id="ege_informatics" name="ege_informatics" value="{{ scores.informatics }}" min="0" max="100">
+      </div>
+      <div class="form-group col">
+        <label for="ege_chemistry">Химия</label>
+        <input type="number" class="form-control" id="ege_chemistry" name="ege_chemistry" value="{{ scores.chemistry }}" min="0" max="100">
+      </div>
+      <div class="form-group col">
+        <label for="ege_social">Обществознание</label>
+        <input type="number" class="form-control" id="ege_social" name="ege_social" value="{{ scores.social }}" min="0" max="100">
+      </div>
+      <div class="form-group col">
+        <label for="ege_language">Иностранный язык</label>
+        <input type="number" class="form-control" id="ege_language" name="ege_language" value="{{ scores.language }}" min="0" max="100">
       </div>
     </div>
     <button type="submit" class="btn btn-primary">Рассчитать</button>
   </form>
-  <p>Суммарный балл: {{ total }}</p>
+
   <table class="table table-bordered table-sm">
     <thead>
       <tr>
@@ -37,8 +55,10 @@
         <th>Направление</th>
         <th>Предметы</th>
         <th>Проходной балл 2024</th>
+        <th>Ваш балл</th>
+        <th>Шанс, %</th>
         <th>Платные места (РФ)</th>
-        <th>Платные места (иностран.)</th>
+        <th>Платные места (иност.)</th>
       </tr>
     </thead>
     <tbody>
@@ -48,6 +68,8 @@
         <td>{{ p.name }}</td>
         <td>{{ p.subjects }}</td>
         <td>{{ p.score_2024 or '—' }}</td>
+        <td>{{ p.user_score }}</td>
+        <td>{{ p.probability if p.probability is not none else '—' }}</td>
         <td>{{ p.paid_ru or '—' }}</td>
         <td>{{ p.paid_int or '—' }}</td>
       </tr>
