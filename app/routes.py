@@ -1,15 +1,25 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app import db
-from app.models import Result, Test, Question, Option
+from app.models import Result, Test, Option
+import json
+from .career_utils import (
+    load_structure,
+    calculate_interest_scores,
+    order_scores,
+    recommend_program,
+    ensure_career_test,
+)
 
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def index():
     """Главная страница. Показывает доступные тесты или приветствие."""
-    tests = Test.query.all()
-    return render_template('index.html', tests=tests)
+    tests = Test.query.filter(Test.type != 'career').all()
+    career_test = ensure_career_test()
+    career_id = career_test.id if career_test else None
+    return render_template('index.html', tests=tests, career_test_id=career_id)
 
 @main_bp.route('/test/<int:test_id>', methods=['GET', 'POST'])
 @login_required
@@ -120,4 +130,58 @@ def result(test_id):
     if result is None:
         flash('Результат для данного теста не найден.', 'warning')
         return redirect(url_for('main.index'))
-    return render_template('result.html', test=test, result=result)
+    data = None
+    if test.type == 'career':
+        try:
+            data = json.loads(result.result_text)
+        except Exception:
+            data = None
+    return render_template('result.html', test=test, result=result, data=data)
+
+
+@main_bp.route('/profile')
+@login_required
+def profile():
+    """Личный профиль с результатами всех тестов."""
+    user_results = Result.query.filter_by(user_id=current_user.id).order_by(Result.timestamp.desc()).all()
+    career_test = Test.query.filter_by(type='career').first()
+    career_id = career_test.id if career_test else None
+    return render_template('profile.html', results=user_results, career_test_id=career_id)
+
+
+@main_bp.route('/career_test', methods=['GET', 'POST'])
+@login_required
+def career_test():
+    """Standalone career test based on documentation structure."""
+    questions, programs = load_structure()
+    career_test = ensure_career_test()
+    if request.method == 'POST':
+        answers = {}
+        for q in questions:
+            field = request.form.get(f"q_{q['id']}")
+            if field is None:
+                flash('Пожалуйста, ответьте на все вопросы теста.', 'warning')
+                return render_template('career_test.html', questions=questions)
+            answers[q['id']] = int(field)
+        scores = calculate_interest_scores(questions, answers)
+        ordered = order_scores(scores)
+        ege_scores = {
+            'math': current_user.ege_math or 0,
+            'russian': current_user.ege_russian or 0,
+            'physics': current_user.ege_physics or 0,
+            'informatics': 0,
+            'chemistry': 0,
+            'social': 0,
+            'language': 0,
+        }
+        program = recommend_program(scores, ege_scores, programs)
+        data = {
+            'recommended': program,
+            'scores': ordered,
+        }
+        result_text = json.dumps(data, ensure_ascii=False)
+        db.session.add(Result(user_id=current_user.id, test_id=career_test.id, result_text=result_text))
+        db.session.commit()
+        return redirect(url_for('main.result', test_id=career_test.id))
+
+    return render_template('career_test.html', questions=questions)
