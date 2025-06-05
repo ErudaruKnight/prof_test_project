@@ -10,7 +10,8 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <a class="navbar-brand" href="{{ url_for('main.index') }}">ProfTest</a>
 </nav>
-<div class="container mt-4">
+
+<div class="container-fluid mt-4">
   <h2>Калькулятор ЕГЭ</h2>
   <form method="post" class="mb-4">
     <div class="form-row">
@@ -49,7 +50,7 @@
   </form>
 
   <div class="table-responsive">
-    <table class="table table-bordered table-hover table-sm">
+    <table class="table table-bordered table-hover table-sm w-100">
       <thead>
         <tr>
           <th>Код</th>
