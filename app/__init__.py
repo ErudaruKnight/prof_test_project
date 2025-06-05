@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from .career_utils import ensure_career_test
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -35,6 +36,7 @@ def create_app(config_class=None):
 
     with app.app_context():
         db.create_all()
+        ensure_career_test()
 
     return app
 
