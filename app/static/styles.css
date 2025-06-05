@@ -65,3 +65,12 @@ button:hover {
     color: #333;
     margin-top: 20px;
 }
+
+.progress {
+    height: 20px;
+}
+
+.progress-bar {
+    line-height: 20px;
+    font-size: 14px;
+}
