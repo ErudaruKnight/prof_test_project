@@ -13,7 +13,6 @@ SUBJECT_MAP = {
     'А': 'language',
 }
 
-
 def parse_subjects(subject_str):
     groups = []
     for part in subject_str.split('+'):
@@ -26,7 +25,6 @@ def parse_subjects(subject_str):
         if options:
             groups.append(options)
     return groups
-
 
 def calc_program_score(groups, scores):
     total = 0
@@ -48,6 +46,7 @@ def ege_calculator():
         'social': 0,
         'language': 0,
     }
+
     if request.method == 'POST':
         for key in scores:
             try:
@@ -64,6 +63,11 @@ def ege_calculator():
         probability = None
         if needed is not None:
             probability = max(0, min(100, round((user_score - needed + 30) / 60 * 100, 1)))
-        programs.append({**p, 'eligible': eligible, 'user_score': user_score, 'probability': probability})
+        programs.append({
+            **p,
+            'eligible': eligible,
+            'user_score': user_score,
+            'probability': probability
+        })
 
     return render_template('calculator.html', scores=scores, programs=programs)
