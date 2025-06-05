@@ -70,3 +70,16 @@ def recommend_program(scores, ege_scores, programs):
         if needed is None or user_score >= needed:
             return direction
     return ordered[0][0]
+
+
+def ensure_career_test():
+    """Make sure a career test record exists in the database."""
+    from app.models import Test
+    from app import db
+
+    if not Test.query.filter_by(type='career').first():
+        t = Test(title='Профориентационный тест', type='career')
+        db.session.add(t)
+        db.session.commit()
+        return t
+    return Test.query.filter_by(type='career').first()
