@@ -72,7 +72,6 @@ def login():
     if request.method == 'POST':
         login_field = request.form.get('username')  # Логин или email
         password = request.form.get('password')
-        confirm = request.form['confirm']
         user = User.query.filter_by(username=login_field).first() or User.query.filter_by(email=login_field).first()
         if user and user.check_password(password):
             login_user(user)
