@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app import db
-from app.models import Result, Test, Question, Option
+from app.models import Result, Test, Option
 import json
 from .career_utils import (
     load_structure,

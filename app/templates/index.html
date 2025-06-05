@@ -1,128 +1,105 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
-from flask_login import login_required, current_user
-from app import db
-from app.models import Result, Test, Question, Option
-import json
-from .career_utils import (
-    load_structure,
-    calculate_interest_scores,
-    order_scores,
-    recommend_program,
-    ensure_career_test,
-)
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Профориентационный тест</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="{{ url_for('main.index') }}">ProfTest</a>
+  <div class="collapse navbar-collapse">
+    <ul class="navbar-nav ml-auto">
+      {% if current_user.is_authenticated %}
+        {% if current_user.is_admin %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('admin.admin_index') }}">Админ-панель</a>
+        </li>
+        {% endif %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('calc.ege_calculator') }}">Калькулятор ЕГЭ</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('main.profile') }}">Профиль</a>
+        </li>
+        <li class="nav-item">
+          <span class="navbar-text">Вы вошли как {{ current_user.full_name or current_user.username }}</span>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('auth.logout') }}">Выйти</a>
+        </li>
+      {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('auth.login') }}">Вход</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('auth.register') }}">Регистрация</a>
+        </li>
+      {% endif %}
+    </ul>
+  </div>
+</nav>
 
-main_bp = Blueprint('main', __name__)
+<div class="container mt-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+      <div class="alert alert-{{ category }}" role="alert">
+        {{ msg }}
+      </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 
-@main_bp.route('/')
-def index():
-    """Главная страница. Показывает доступные тесты или приветствие."""
-    tests = Test.query.filter(Test.type != 'career').all()
-    career_test = ensure_career_test()
-    career_id = career_test.id if career_test else None
-    return render_template('index.html', tests=tests, career_test_id=career_id)
+  {% if current_user.is_authenticated %}
+    <div class="jumbotron">
+      <h1 class="display-4">Добро пожаловать!</h1>
+      <p class="lead">Используйте калькулятор, пройдите профориентационный тест и просматривайте результаты в личном профиле.</p>
+      <hr class="my-4">
+      <a class="btn btn-primary btn-lg" href="{{ url_for('main.profile') }}" role="button">Мой профиль</a>
+      <a class="btn btn-success btn-lg ml-2" href="{{ url_for('main.career_test') }}" role="button">Пройти тест</a>
+    </div>
 
-@main_bp.route('/test/<int:test_id>', methods=['GET', 'POST'])
-@login_required
-def take_test(test_id):
-    """Маршрут прохождения выбранного теста (как профориентационного, так и теста знаний)."""
-    test = Test.query.get_or_404(test_id)
-    # Ограничим доступ: обычные пользователи могут проходить оба теста,
-    # здесь не требуется специальной проверки, кроме авторизации (login_required).
-    if request.method == 'POST':
-        # Обработка отправленных ответов на тест
-        if test.type == 'knowledge':
-            # Если это тест знаний (например, ввод баллов ЕГЭ)
-            # Пройдем по всем вопросам и сохраним результаты в профиле пользователя
-            results_parts = []
-            for question in test.questions:
-                field_name = f"q_{question.id}"
-                answer_value = request.form.get(field_name)
-                if answer_value is None or answer_value == '':
-                    # Если какой-то вопрос не заполнен, предупредим и вернем форму
-                    flash('Пожалуйста, заполните все поля для ввода баллов.', 'warning')
-                    return render_template('test.html', test=test)
-                try:
-                    score = int(answer_value)
-                except ValueError:
-                    flash('Баллы ЕГЭ должны быть числом.', 'danger')
-@@ -98,26 +108,80 @@ def take_test(test_id):
-            else:
-                recommendation = "Не удалось определить чёткую область интересов. Попробуйте пройти тест заново или уточнить предпочтения."
-            # Финальный текст результата
-            result_text = ""
-            if interest_category:
-                result_text += f"Основная область интересов: {interest_category}. "
-            result_text += recommendation
-            # Сохраняем результат в базу данных
-            db.session.add(Result(user_id=current_user.id, test_id=test.id, result_text=result_text))
-            db.session.commit()
-            # Перенаправляем на страницу с отображением результата
-            return redirect(url_for('main.result', test_id=test.id))
-    # GET запрос: отобразить страницу с вопросами теста
-    return render_template('test.html', test=test)
+    <h2>Доступные тесты</h2>
+    <ul class="list-group">
+      {% for test in tests %}
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{{ test.title }}</strong>
+            {% if test.description %}<small class="text-muted">– {{ test.description }}</small>{% endif %}
+            {% if current_user.is_authenticated %}
+              {% set user_result = (current_user.results | selectattr("test_id", "equalto", test.id) | list)|last %}
+            {% endif %}
+            {% if user_result %}
+              <span class="badge badge-info">Пройдено</span>
+            {% endif %}
+          </div>
+          <div>
+            {% if user_result %}
+              <a href="{{ url_for('main.take_test', test_id=test.id) }}" class="btn btn-primary btn-sm">Пройти снова</a>
+              <a href="{{ url_for('main.result', test_id=test.id) }}" class="btn btn-secondary btn-sm">Результат</a>
+            {% else %}
+              <a href="{{ url_for('main.take_test', test_id=test.id) }}" class="btn btn-success btn-sm">Пройти тест</a>
+            {% endif %}
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 
-@main_bp.route('/result/<int:test_id>')
-@login_required
-def result(test_id):
-    """Маршрут для отображения результата прохождения теста."""
-    test = Test.query.get_or_404(test_id)
-    # Получаем последний результат текущего пользователя для данного теста
-    result = Result.query.filter_by(user_id=current_user.id, test_id=test.id).order_by(Result.timestamp.desc()).first()
-    if result is None:
-        flash('Результат для данного теста не найден.', 'warning')
-        return redirect(url_for('main.index'))
-    data = None
-    if test.type == 'career':
-        try:
-            data = json.loads(result.result_text)
-        except Exception:
-            data = None
-    return render_template('result.html', test=test, result=result, data=data)
-
-
-@main_bp.route('/profile')
-@login_required
-def profile():
-    """Личный профиль с результатами всех тестов."""
-    user_results = Result.query.filter_by(user_id=current_user.id).order_by(Result.timestamp.desc()).all()
-    career_test = Test.query.filter_by(type='career').first()
-    career_id = career_test.id if career_test else None
-    return render_template('profile.html', results=user_results, career_test_id=career_id)
-
-
-@main_bp.route('/career_test', methods=['GET', 'POST'])
-@login_required
-def career_test():
-    """Standalone career test based on documentation structure."""
-    questions, programs = load_structure()
-    career_test = ensure_career_test()
-    if request.method == 'POST':
-        answers = {}
-        for q in questions:
-            field = request.form.get(f"q_{q['id']}")
-            if field is None:
-                flash('Пожалуйста, ответьте на все вопросы теста.', 'warning')
-                return render_template('career_test.html', questions=questions)
-            answers[q['id']] = int(field)
-        scores = calculate_interest_scores(questions, answers)
-        ordered = order_scores(scores)
-        ege_scores = {
-            'math': current_user.ege_math or 0,
-            'russian': current_user.ege_russian or 0,
-            'physics': current_user.ege_physics or 0,
-            'informatics': 0,
-            'chemistry': 0,
-            'social': 0,
-            'language': 0,
-        }
-        program = recommend_program(scores, ege_scores, programs)
-        data = {
-            'recommended': program,
-            'scores': ordered,
-        }
-        result_text = json.dumps(data, ensure_ascii=False)
-        db.session.add(Result(user_id=current_user.id, test_id=career_test.id, result_text=result_text))
-        db.session.commit()
-        return redirect(url_for('main.result', test_id=career_test.id))
-
-    return render_template('career_test.html', questions=questions)
+  {% if not current_user.is_authenticated %}
+    <div class="jumbotron">
+      <h1 class="display-4">Добро пожаловать!</h1>
+      <p class="lead">Зарегистрируйтесь, чтобы пройти тест и рассчитать шансы поступления с помощью нашего калькулятора ЕГЭ.</p>
+      <hr class="my-4">
+      <a class="btn btn-primary btn-lg" href="{{ url_for('auth.login') }}" role="button">Войти</a>
+      <a class="btn btn-secondary btn-lg" href="{{ url_for('auth.register') }}" role="button">Регистрация</a>
+      <a class="btn btn-success btn-lg ml-2" href="{{ url_for('auth.login', next=url_for('main.career_test')) }}" role="button">Пройти тест</a>
+    </div>
+  {% endif %}
+</div>
+</body>
+</html>
