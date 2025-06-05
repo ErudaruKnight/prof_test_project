@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Калькулятор ЕГЭ</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="{{ url_for('main.index') }}">ProfTest</a>
+</nav>
+<div class="container mt-4">
+  <h2>Калькулятор ЕГЭ</h2>
+  <form method="post" class="mb-4">
+    <div class="form-row">
+      <div class="form-group col">
+        <label for="ege_math">Математика</label>
+        <input type="number" class="form-control" id="ege_math" name="ege_math" value="{{ scores.math }}" min="0" max="100">
+      </div>
+      <div class="form-group col">
+        <label for="ege_russian">Русский язык</label>
+        <input type="number" class="form-control" id="ege_russian" name="ege_russian" value="{{ scores.russian }}" min="0" max="100">
+      </div>
+      <div class="form-group col">
+        <label for="ege_physics">Физика/Информатика</label>
+        <input type="number" class="form-control" id="ege_physics" name="ege_physics" value="{{ scores.physics }}" min="0" max="100">
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Рассчитать</button>
+  </form>
+  <p>Суммарный балл: {{ total }}</p>
+  <table class="table table-bordered table-sm">
+    <thead>
+      <tr>
+        <th>Код</th>
+        <th>Направление</th>
+        <th>Предметы</th>
+        <th>Проходной балл 2024</th>
+        <th>Платные места (РФ)</th>
+        <th>Платные места (иностран.)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in programs %}
+      <tr {% if p.eligible %}class="table-success"{% endif %}>
+        <td>{{ p.code }}</td>
+        <td>{{ p.name }}</td>
+        <td>{{ p.subjects }}</td>
+        <td>{{ p.score_2024 or '—' }}</td>
+        <td>{{ p.paid_ru or '—' }}</td>
+        <td>{{ p.paid_int or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+</body>
+</html>
