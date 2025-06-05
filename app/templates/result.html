@@ -11,6 +11,8 @@
   <a class="navbar-brand" href="{{ url_for('main.index') }}">ProfTest</a>
   {% if current_user.is_authenticated %}
   <ul class="navbar-nav ml-auto">
+    <li class="nav-item"><a class="nav-link" href="{{ url_for('calc.ege_calculator') }}">Калькулятор ЕГЭ</a></li>
+    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.profile') }}">Профиль</a></li>
     <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Выйти</a></li>
   </ul>
   {% endif %}
@@ -18,7 +20,21 @@
 <div class="container mt-4">
   <h2>Результат: {{ test.title }}</h2>
   <div class="card p-3 mb-3">
-    <p>{{ result.result_text }}</p>
+    {% if data %}
+      <p>Рекомендуемое направление: {{ data.recommended or 'Не определено' }}</p>
+      <table class="table table-striped">
+        <thead>
+          <tr><th>Направление</th><th>Баллы</th></tr>
+        </thead>
+        <tbody>
+          {% for direction, score in data.scores %}
+          <tr><td>{{ direction }}</td><td>{{ score }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>{{ result.result_text }}</p>
+    {% endif %}
   </div>
   <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Назад на главную</a>
 </div>
