@@ -55,6 +55,11 @@ def calculate_interest_scores(questions, answers):
     return totals
 
 
+def order_scores(scores):
+    """Return a list of (direction, score) tuples sorted descending."""
+    return sorted(scores.items(), key=lambda x: x[1], reverse=True)
+
+
 def recommend_program(scores, ege_scores, programs):
     """Return best matching program considering EGE scores."""
     if not scores:
