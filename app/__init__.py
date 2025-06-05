@@ -25,11 +25,13 @@ def create_app(config_class=None):
     from app.admin import admin_bp
     from app.routes import main_bp
     from app.api import api_bp
+    from app.calc import calc_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(main_bp)
+    app.register_blueprint(calc_bp, url_prefix='/calc')
 
     with app.app_context():
         db.create_all()

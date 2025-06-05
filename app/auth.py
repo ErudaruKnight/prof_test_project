@@ -25,7 +25,7 @@ def register():
         is_student = request.form.get('is_student') == '1'
 
         # Валидация введенных данных
-        if not username or not email or not password or not last_name or not first_name:
+        if not username or not email or not password:
             flash('Пожалуйста, заполните все обязательные поля.', 'warning')
             return redirect(url_for('auth.register'))
         elif password != confirm:
