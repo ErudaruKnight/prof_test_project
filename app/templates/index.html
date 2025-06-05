@@ -21,6 +21,9 @@
           <a class="nav-link" href="{{ url_for('calc.ege_calculator') }}">Калькулятор ЕГЭ</a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('main.profile') }}">Профиль</a>
+        </li>
+        <li class="nav-item">
           <span class="navbar-text">Вы вошли как {{ current_user.full_name or current_user.username }}</span>
         </li>
         <li class="nav-item">
@@ -50,7 +53,17 @@
   {% endwith %}
 
   {% if current_user.is_authenticated %}
-    <h1>Доступные тесты</h1>
+    <div class="jumbotron">
+      <h1 class="display-4">Добро пожаловать!</h1>
+      <p class="lead">Используйте калькулятор, пройдите профориентационный тест и просматривайте результаты в личном профиле.</p>
+      <hr class="my-4">
+      <a class="btn btn-primary btn-lg" href="{{ url_for('main.profile') }}" role="button">Мой профиль</a>
+      {% if career_test_id %}
+      <a class="btn btn-success btn-lg ml-2" href="{{ url_for('main.take_test', test_id=career_test_id) }}" role="button">Пройти тест</a>
+      {% endif %}
+    </div>
+
+    <h2>Доступные тесты</h2>
     <ul class="list-group">
       {% for test in tests %}
       <li class="list-group-item">
@@ -80,10 +93,13 @@
   {% else %}
     <div class="jumbotron">
       <h1 class="display-4">Добро пожаловать!</h1>
-      <p class="lead">Пожалуйста, войдите в систему или зарегистрируйтесь, чтобы пройти профориентационное тестирование.</p>
+      <p class="lead">Зарегистрируйтесь, чтобы пройти тест и рассчитать шансы поступления с помощью нашего калькулятора ЕГЭ.</p>
       <hr class="my-4">
       <a class="btn btn-primary btn-lg" href="{{ url_for('auth.login') }}" role="button">Войти</a>
       <a class="btn btn-secondary btn-lg" href="{{ url_for('auth.register') }}" role="button">Регистрация</a>
+      {% if career_test_id %}
+      <a class="btn btn-success btn-lg ml-2" href="{{ url_for('auth.login', next=url_for('main.take_test', test_id=career_test_id)) }}" role="button">Пройти тест</a>
+      {% endif %}
     </div>
   {% endif %}
 </div>

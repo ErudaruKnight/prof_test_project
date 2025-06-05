@@ -9,7 +9,9 @@ main_bp = Blueprint('main', __name__)
 def index():
     """Главная страница. Показывает доступные тесты или приветствие."""
     tests = Test.query.all()
-    return render_template('index.html', tests=tests)
+    career_test = Test.query.filter_by(type='career').first()
+    career_id = career_test.id if career_test else None
+    return render_template('index.html', tests=tests, career_test_id=career_id)
 
 @main_bp.route('/test/<int:test_id>', methods=['GET', 'POST'])
 @login_required
@@ -121,3 +123,13 @@ def result(test_id):
         flash('Результат для данного теста не найден.', 'warning')
         return redirect(url_for('main.index'))
     return render_template('result.html', test=test, result=result)
+
+
+@main_bp.route('/profile')
+@login_required
+def profile():
+    """Личный профиль с результатами всех тестов."""
+    user_results = Result.query.filter_by(user_id=current_user.id).order_by(Result.timestamp.desc()).all()
+    career_test = Test.query.filter_by(type='career').first()
+    career_id = career_test.id if career_test else None
+    return render_template('profile.html', results=user_results, career_test_id=career_id)
