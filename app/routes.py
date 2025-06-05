@@ -45,7 +45,7 @@ def take_test(test_id):
                     score = int(answer_value)
                 except ValueError:
                     flash('Баллы ЕГЭ должны быть числом.', 'danger')
-@@ -98,26 +108,80 @@ def take_test(test_id):
+@@ -98,26 +108,90 @@ def take_test(test_id):
             else:
                 recommendation = "Не удалось определить чёткую область интересов. Попробуйте пройти тест заново или уточнить предпочтения."
             # Финальный текст результата
@@ -85,9 +85,19 @@ def result(test_id):
 def profile():
     """Личный профиль с результатами всех тестов."""
     user_results = Result.query.filter_by(user_id=current_user.id).order_by(Result.timestamp.desc()).all()
+    results_data = []
+    for r in user_results:
+        parsed = None
+        if r.test.type == 'career':
+            try:
+                parsed = json.loads(r.result_text)
+            except Exception:
+                parsed = None
+        results_data.append({'result': r, 'data': parsed})
+
     career_test = Test.query.filter_by(type='career').first()
     career_id = career_test.id if career_test else None
-    return render_template('profile.html', results=user_results, career_test_id=career_id)
+    return render_template('profile.html', results=results_data, career_test_id=career_id)
 
 
 @main_bp.route('/career_test', methods=['GET', 'POST'])

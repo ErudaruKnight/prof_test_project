@@ -28,11 +28,24 @@
   <h4 class="mt-4">Результаты тестов</h4>
   {% if results %}
   <ul class="list-group">
-    {% for r in results %}
+    {% for entry in results %}
+    {% set r = entry.result %}
     <li class="list-group-item">
       <strong>{{ r.test.title }}</strong>
       <small class="text-muted">{{ r.timestamp.strftime('%Y-%m-%d') }}</small>
-      <div>{{ r.result_text }}</div>
+      {% if entry.data %}
+        <p class="mt-2 mb-1">Рекомендуемое направление: {{ entry.data.recommended or 'Не определено' }}</p>
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Направление</th><th>Баллы</th></tr></thead>
+          <tbody>
+            {% for direction, score in entry.data.scores %}
+            <tr><td>{{ direction }}</td><td>{{ score }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="mt-2">{{ r.result_text }}</div>
+      {% endif %}
     </li>
     {% endfor %}
   </ul>

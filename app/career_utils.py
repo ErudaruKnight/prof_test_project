@@ -61,20 +61,38 @@ def order_scores(scores):
 
 
 def recommend_program(scores, ege_scores, programs):
-    """Return best matching program considering EGE scores."""
+    """Return best matching program considering EGE scores.
+
+    The function first tries to find the highest scoring direction where the
+    user's EGE points meet or exceed the passing score for 2024. If none of the
+    directions satisfy the requirement, it falls back to simply returning the
+    direction with the highest interest score regardless of the passing score.
+    Directions without a published passing score are only considered if no other
+    direction matches the user's points.
+    """
     if not scores:
         return None
+
     ordered = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    best_direction = ordered[0][0]
+
     for direction, _ in ordered:
         info = programs.get(direction)
         if not info:
             continue
+        needed = info.get("score_2024")
+        if needed is None:
+            # Skip directions without a defined passing score until
+            # all other options are checked
+            continue
         groups = parse_subjects(info["subjects"])
         user_score = calc_program_score(groups, ege_scores)
-        needed = info["score_2024"]
-        if needed is None or user_score >= needed:
+        if user_score >= needed:
             return direction
-    return ordered[0][0]
+
+    # If nothing matched including directions without scores, choose the highest
+    # interest direction regardless of passing score
+    return best_direction
 
 
 def ensure_career_test():
