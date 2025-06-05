@@ -27,6 +27,8 @@ def register(client, username="testuser", password="password123", email="test@ex
     return client.post(
         "/register",
         data={
+            "last_name": "Doe",
+            "first_name": "John",
             "username": username,
             "email": email,
             "password": password,
