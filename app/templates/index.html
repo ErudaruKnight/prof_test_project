@@ -52,16 +52,17 @@
     {% endif %}
   {% endwith %}
 
-  {% if current_user.is_authenticated %}
-    <div class="jumbotron">
-      <h1 class="display-4">Добро пожаловать!</h1>
-      <p class="lead">Используйте калькулятор, пройдите профориентационный тест и просматривайте результаты в личном профиле.</p>
-      <hr class="my-4">
-      <a class="btn btn-primary btn-lg" href="{{ url_for('main.profile') }}" role="button">Мой профиль</a>
-      {% if career_test_id %}
-      <a class="btn btn-success btn-lg ml-2" href="{{ url_for('main.take_test', test_id=career_test_id) }}" role="button">Пройти тест</a>
-      {% endif %}
-    </div>
+{% if current_user.is_authenticated %}
+  <div class="jumbotron">
+    <h1 class="display-4">Добро пожаловать!</h1>
+    <p class="lead">Используйте калькулятор, пройдите профориентационный тест и просматривайте результаты в личном профиле.</p>
+    <hr class="my-4">
+    <a class="btn btn-primary btn-lg" href="{{ url_for('main.profile') }}" role="button">Мой профиль</a>
+    {% if career_test_id %}
+    <a class="btn btn-success btn-lg ml-2" href="{{ url_for('main.take_test', test_id=career_test_id) }}" role="button">Пройти тест</a>
+    {% endif %}
+  </div>
+{% endif %}
 
     <h2>Доступные тесты</h2>
     <ul class="list-group">
