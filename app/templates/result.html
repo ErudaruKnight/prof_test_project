@@ -11,6 +11,8 @@
   <a class="navbar-brand" href="{{ url_for('main.index') }}">ProfTest</a>
   {% if current_user.is_authenticated %}
   <ul class="navbar-nav ml-auto">
+    <li class="nav-item"><a class="nav-link" href="{{ url_for('calc.ege_calculator') }}">Калькулятор ЕГЭ</a></li>
+    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.profile') }}">Профиль</a></li>
     <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Выйти</a></li>
   </ul>
   {% endif %}
