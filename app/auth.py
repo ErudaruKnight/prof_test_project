@@ -16,13 +16,16 @@ def register():
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
-        confirm = request.form['confirm']  # <-- ЭТО нужно добавить
+        confirm = request.form['confirm']
 
+        last_name = request.form.get('last_name')
+        first_name = request.form.get('first_name')
+        middle_name = request.form.get('middle_name')
         birth_date_str = request.form.get('birth_date')
         is_student = request.form.get('is_student') == '1'
 
         # Валидация введенных данных
-        if not username or not email or not password:
+        if not username or not email or not password or not last_name or not first_name:
             flash('Пожалуйста, заполните все обязательные поля.', 'warning')
             return redirect(url_for('auth.register'))
         elif password != confirm:
@@ -40,7 +43,15 @@ def register():
             return redirect(url_for('auth.register'))
 
         # Создание нового пользователя
-        user = User(username=username, email=email, birth_date=birth_date, is_student=is_student)
+        user = User(
+            username=username,
+            email=email,
+            birth_date=birth_date,
+            is_student=is_student,
+            last_name=last_name,
+            first_name=first_name,
+            middle_name=middle_name,
+        )
         user.set_password(password)
 
         # Если студент — сохраняем баллы
@@ -76,7 +87,7 @@ def login():
         user = User.query.filter_by(username=login_field).first() or User.query.filter_by(email=login_field).first()
         if user and user.check_password(password):
             login_user(user)
-            flash(f'Добро пожаловать, {user.username}!', 'success')
+            flash(f'Добро пожаловать, {user.full_name or user.username}!', 'success')
             next_page = request.args.get('next')
             return redirect(next_page or url_for('main.index'))
         else:
