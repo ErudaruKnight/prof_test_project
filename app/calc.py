@@ -13,6 +13,16 @@ SUBJECT_MAP = {
     'А': 'language',
 }
 
+SUBJECT_NAMES = {
+    'math': 'Математика',
+    'russian': 'Русский язык',
+    'physics': 'Физика',
+    'informatics': 'Информатика',
+    'chemistry': 'Химия',
+    'social': 'Обществознание',
+    'language': 'Иностранный язык',
+}
+
 def parse_subjects(subject_str):
     groups = []
     for part in subject_str.split('+'):
@@ -25,6 +35,19 @@ def parse_subjects(subject_str):
         if options:
             groups.append(options)
     return groups
+
+def full_subjects(subject_str):
+    parts = []
+    for part in subject_str.split('+'):
+        names = []
+        for token in part.split('/'):
+            token = token.strip()
+            key = SUBJECT_MAP.get(token)
+            full = SUBJECT_NAMES.get(key, token)
+            names.append(full)
+        parts.append('/'.join(names))
+    return ' + '.join(parts)
+
 
 def calc_program_score(groups, scores):
     total = 0
@@ -47,7 +70,13 @@ def ege_calculator():
         'language': 0,
     }
 
-    if request.method == 'POST':
+        programs.append({
+            **p,
+            'eligible': eligible,
+            'user_score': user_score,
+            'probability': probability,
+            'subjects_full': full_subjects(p['subjects']),
+        })
         for key in scores:
             try:
                 scores[key] = int(request.form.get(f'ege_{key}', 0))
