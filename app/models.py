@@ -10,6 +10,10 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+    # Новые поля для хранения полного имени пользователя
+    last_name = db.Column(db.String(50))
+    first_name = db.Column(db.String(50))
+    middle_name = db.Column(db.String(50))
     is_admin = db.Column(db.Boolean, default=False)
     interests = db.Column(db.String(256))
 
@@ -28,6 +32,12 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    @property
+    def full_name(self):
+        """Возвращает полное имя пользователя."""
+        parts = [self.last_name, self.first_name, self.middle_name]
+        return " ".join([p for p in parts if p])
 
     def __repr__(self):
         return f'<User {self.username}>'
