@@ -91,7 +91,9 @@
       </li>
       {% endfor %}
     </ul>
-  {% else %}
+  {% endif %}
+
+  {% if not current_user.is_authenticated %}
     <div class="jumbotron">
       <h1 class="display-4">Добро пожаловать!</h1>
       <p class="lead">Зарегистрируйтесь, чтобы пройти тест и рассчитать шансы поступления с помощью нашего калькулятора ЕГЭ.</p>
