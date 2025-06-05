@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db
 from app.models import User
-from datetime import datetime  # <== Добавь сюда!
+from datetime import datetime  # used for parsing birth_date
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -16,7 +16,7 @@ def register():
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
-        confirm = request.form['confirm']  # <-- ЭТО нужно добавить
+        confirm = request.form['confirm']  # password confirmation field
 
         birth_date_str = request.form.get('birth_date')
         is_student = request.form.get('is_student') == '1'
