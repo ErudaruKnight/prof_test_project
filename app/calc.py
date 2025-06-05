@@ -23,7 +23,6 @@ SUBJECT_NAMES = {
     'language': 'Иностранный язык',
 }
 
-
 def parse_subjects(subject_str):
     groups = []
     for part in subject_str.split('+'):
@@ -37,7 +36,6 @@ def parse_subjects(subject_str):
             groups.append(options)
     return groups
 
-
 def full_subjects(subject_str):
     parts = []
     for part in subject_str.split('+'):
@@ -49,7 +47,6 @@ def full_subjects(subject_str):
             names.append(full)
         parts.append('/'.join(names))
     return ' + '.join(parts)
-
 
 def calc_program_score(groups, scores):
     total = 0
@@ -71,6 +68,7 @@ def ege_calculator():
         'social': 0,
         'language': 0,
     }
+
     if request.method == 'POST':
         for key in scores:
             try:
@@ -84,18 +82,20 @@ def ege_calculator():
         user_score = calc_program_score(groups, scores)
         needed = p['score_2024']
         eligible = needed is not None and user_score >= needed
+
         probability = None
+        prob_color = None
         if needed is not None:
             probability = max(0, min(100, round((user_score - needed + 30) / 60 * 100, 1)))
-        prob_color = None
-        if probability is not None:
             if probability >= 60:
                 prob_color = 'bg-success'
             elif probability >= 30:
                 prob_color = 'bg-warning'
             else:
                 prob_color = 'bg-danger'
+
         cost_display = f"{p['cost']:,}".replace(',', ' ') + ' руб/сем'
+
         programs.append({
             **p,
             'eligible': eligible,

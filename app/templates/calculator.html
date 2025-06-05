@@ -47,47 +47,48 @@
     </div>
     <button type="submit" class="btn btn-primary">Рассчитать</button>
   </form>
+
   <div class="table-responsive">
-  <table class="table table-bordered table-hover table-sm">
-    <thead>
-      <tr>
-        <th>Код</th>
-        <th>Направление</th>
-        <th>Предметы</th>
-        <th>Проходной балл 2024</th>
-        <th>Ваш балл</th>
-        <th>Шанс</th>
-        <th>Бюджетных мест</th>
-        <th>Стоимость</th>
-        <th>Платные места (РФ)</th>
-        <th>Платные места (иност.)</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for p in programs %}
-      <tr {% if p.eligible %}class="table-success"{% endif %}>
-        <td>{{ p.code }}</td>
-        <td>{{ p.name }}</td>
-        <td>{{ p.subjects_full }}</td>
-        <td>{{ p.score_2024 or '—' }}</td>
-        <td>{{ p.user_score }}</td>
-        <td>
-          {% if p.probability is not none %}
-          <div class="progress">
-            <div class="progress-bar {{ p.prob_color }}" role="progressbar" style="width: {{ p.probability }}%">
-              {{ p.probability }}%
-            </div>
-          </div>
-          {% else %}—{% endif %}
-        </td>
-        <td>{{ p.budget_total or '—' }}</td>
-        <td>{{ p.cost_display }}</td>
-        <td>{{ p.paid_ru or '—' }}</td>
-        <td>{{ p.paid_int or '—' }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <table class="table table-bordered table-hover table-sm">
+      <thead>
+        <tr>
+          <th>Код</th>
+          <th>Направление</th>
+          <th>Предметы</th>
+          <th>Проходной балл 2024</th>
+          <th>Ваш балл</th>
+          <th>Шанс</th>
+          <th>Бюджетных мест</th>
+          <th>Стоимость</th>
+          <th>Платные места (РФ)</th>
+          <th>Платные места (иност.)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in programs %}
+        <tr {% if p.eligible %}class="table-success"{% endif %}>
+          <td>{{ p.code }}</td>
+          <td>{{ p.name }}</td>
+          <td>{{ p.subjects_full }}</td>
+          <td>{{ p.score_2024 or '—' }}</td>
+          <td>{{ p.user_score }}</td>
+          <td>
+            {% if p.probability is not none %}
+              <div class="progress">
+                <div class="progress-bar {{ p.prob_color }}" role="progressbar" style="width: {{ p.probability }}%">
+                  {{ p.probability }}%
+                </div>
+              </div>
+            {% else %}—{% endif %}
+          </td>
+          <td>{{ p.budget_total or '—' }}</td>
+          <td>{{ p.cost_display }}</td>
+          <td>{{ p.paid_ru or '—' }}</td>
+          <td>{{ p.paid_int or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 </body>
